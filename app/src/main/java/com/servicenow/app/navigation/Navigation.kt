@@ -29,6 +29,8 @@ import com.servicenow.app.auth.LoginScreen
 import com.servicenow.app.auth.OtpScreen
 import com.servicenow.app.job.CreateJobScreen
 import com.servicenow.app.job.JobViewModel
+import com.servicenow.app.job.MyJobsScreen
+import com.servicenow.app.job.MyJobsViewModel
 import com.servicenow.app.worker.WorkerDashboardScreen
 import com.servicenow.app.worker.WorkerJob
 import com.servicenow.app.worker.WorkerViewModel
@@ -40,6 +42,7 @@ object Routes {
     const val HOME = "home"
     const val CREATE_JOB = "create_job"
     const val WORKER_DASHBOARD = "worker_dashboard"
+    const val MY_JOBS = "my_jobs"
 }
 
 @Composable
@@ -84,10 +87,12 @@ fun HomeNavHost(
     authViewModel: AuthViewModel,
     jobViewModel: JobViewModel,
     workerViewModel: WorkerViewModel,
+    myJobsViewModel: MyJobsViewModel,
     navController: NavHostController = rememberNavController()
 ) {
     val jobUiState by jobViewModel.uiState.collectAsState()
     val workerUiState by workerViewModel.uiState.collectAsState()
+    val myJobsUiState by myJobsViewModel.uiState.collectAsState()
     var homeMessage = remember { mutableStateOf<String?>(null) }
 
     NavHost(
@@ -99,6 +104,7 @@ fun HomeNavHost(
                 onLogout = { authViewModel.logout() },
                 onRequestElectrician = { navController.navigate(Routes.CREATE_JOB) },
                 onGoOnlineAsWorker = { navController.navigate(Routes.WORKER_DASHBOARD) },
+                onMyJobs = { navController.navigate(Routes.MY_JOBS) },
                 homeMessage = homeMessage.value,
                 onHomeMessageShown = { homeMessage.value = null }
             )
@@ -120,6 +126,12 @@ fun HomeNavHost(
                     // Clear error in state by resetting message
                     jobViewModel.onDescriptionChange(jobUiState.description)
                 }
+            )
+        }
+        composable(Routes.MY_JOBS) {
+            MyJobsScreen(
+                uiState = myJobsUiState,
+                onErrorConsumed = { myJobsViewModel.clearError() }
             )
         }
         composable(Routes.WORKER_DASHBOARD) {
@@ -145,7 +157,8 @@ fun HomeNavHost(
 fun AppEntry(
     authViewModel: AuthViewModel,
     jobViewModel: JobViewModel,
-    workerViewModel: WorkerViewModel
+    workerViewModel: WorkerViewModel,
+    myJobsViewModel: MyJobsViewModel
 ) {
     val authStatus by authViewModel.authStatus.collectAsState()
 
@@ -162,7 +175,8 @@ fun AppEntry(
             HomeNavHost(
                 authViewModel = authViewModel,
                 jobViewModel = jobViewModel,
-                workerViewModel = workerViewModel
+                workerViewModel = workerViewModel,
+                myJobsViewModel = myJobsViewModel
             )
         }
         is AuthStatus.Unauthenticated -> {
@@ -176,6 +190,7 @@ fun HomeScreen(
     onLogout: () -> Unit,
     onRequestElectrician: () -> Unit,
     onGoOnlineAsWorker: () -> Unit,
+    onMyJobs: () -> Unit,
     homeMessage: String?,
     onHomeMessageShown: () -> Unit
 ) {
@@ -209,6 +224,10 @@ fun HomeScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = onRequestElectrician) {
                     Text(text = "Request Electrician")
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                 Button(onClick = onMyJobs) {
+                    Text(text = "My Jobs")
                 }
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = onLogout) {

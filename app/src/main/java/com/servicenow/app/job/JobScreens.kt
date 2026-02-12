@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.OutlinedTextField
@@ -72,6 +74,64 @@ fun CreateJobScreen(
                     )
                 } else {
                     Text(text = "Submit Request")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun MyJobsScreen(
+    uiState: MyJobsUiState,
+    onErrorConsumed: () -> Unit
+) {
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(uiState.errorMessage) {
+        val message = uiState.errorMessage
+        if (message != null) {
+            snackbarHostState.showSnackbar(message)
+            onErrorConsumed()
+        }
+    }
+
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.Start
+        ) {
+            Text(text = "My Jobs")
+            Spacer(modifier = Modifier.height(16.dp))
+
+            if (uiState.isLoading) {
+                CircularProgressIndicator()
+            } else if (uiState.jobs.isEmpty()) {
+                Text(text = "You don't have any jobs yet.")
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(uiState.jobs) { job ->
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        ) {
+                            Text(text = "Service: ${job.serviceType}")
+                            Text(text = "Description: ${job.description}")
+                            Text(text = "Status: ${job.status}")
+                            val workerId = job.workerId
+                            if (!workerId.isNullOrEmpty()) {
+                                Text(text = "Worker: $workerId")
+                            }
+                        }
+                    }
                 }
             }
         }
