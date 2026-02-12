@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "163700173192",
+    "project_id": "servicenow-mvp",
+    "storage_bucket": "servicenow-mvp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:163700173192:android:89c8164710c0dcc934323d",
+        "android_client_info": {
+          "package_name": "com.servicenow.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhkM1_dy0S8ESyLOJWWvJuIBCw0fBuy-s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
