@@ -43,6 +43,24 @@ class MyJobsViewModel(
         )
     }
 
+    fun confirmCompletion(jobId: String, otp: String) {
+        if (otp.isBlank()) {
+            _uiState.value = _uiState.value.copy(errorMessage = "Please enter OTP")
+            return
+        }
+
+        jobRepository.confirmJobCompletion(
+            jobId = jobId,
+            otpInput = otp,
+            onSuccess = {
+                // Listener will deliver updated job; nothing else to do
+            },
+            onError = { message ->
+                _uiState.value = _uiState.value.copy(errorMessage = message)
+            }
+        )
+    }
+
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }

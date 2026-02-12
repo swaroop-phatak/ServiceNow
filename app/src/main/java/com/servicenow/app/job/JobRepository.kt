@@ -1,6 +1,7 @@
 package com.servicenow.app.job
 
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
@@ -76,6 +77,37 @@ class JobRepository(
                     )
                 }
                 onJobsChanged(jobs)
+            }
+    }
+
+    fun confirmJobCompletion(
+        jobId: String,
+        otpInput: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        jobsCollection.document(jobId).get()
+            .addOnSuccessListener { snapshot ->
+                val storedOtp = snapshot.getString("otp")
+                if (storedOtp == null || storedOtp != otpInput) {
+                    onError("Invalid OTP")
+                    return@addOnSuccessListener
+                }
+
+                jobsCollection.document(jobId)
+                    .update(
+                        mapOf(
+                            "status" to "completed",
+                            "otp" to FieldValue.delete()
+                        )
+                    )
+                    .addOnSuccessListener { onSuccess() }
+                    .addOnFailureListener { e ->
+                        onError(e.localizedMessage ?: "Failed to update job")
+                    }
+            }
+            .addOnFailureListener { e ->
+                onError(e.localizedMessage ?: "Failed to fetch job")
             }
     }
 }

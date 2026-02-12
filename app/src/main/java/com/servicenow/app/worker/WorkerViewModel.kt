@@ -11,7 +11,8 @@ import kotlinx.coroutines.launch
 data class WorkerUiState(
     val jobs: List<WorkerJob> = emptyList(),
     val isLoading: Boolean = true,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val lastGeneratedOtp: String? = null
 )
 
 class WorkerViewModel(
@@ -51,6 +52,34 @@ class WorkerViewModel(
                 jobId = jobId,
                 onSuccess = {
                     onAccepted()
+                },
+                onError = { message ->
+                    _uiState.value = _uiState.value.copy(errorMessage = message)
+                    onError(message)
+                }
+            )
+        }
+    }
+
+    fun markInProgress(jobId: String, onUpdated: () -> Unit, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.markInProgress(
+                jobId = jobId,
+                onSuccess = { onUpdated() },
+                onError = { message ->
+                    _uiState.value = _uiState.value.copy(errorMessage = message)
+                    onError(message)
+                }
+            )
+        }
+    }
+
+    fun markCompleted(jobId: String, onError: (String) -> Unit) {
+        viewModelScope.launch {
+            repository.markCompletedWithOtp(
+                jobId = jobId,
+                onOtpGenerated = { otp ->
+                    _uiState.value = _uiState.value.copy(lastGeneratedOtp = otp)
                 },
                 onError = { message ->
                     _uiState.value = _uiState.value.copy(errorMessage = message)

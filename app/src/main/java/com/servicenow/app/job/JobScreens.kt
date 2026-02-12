@@ -18,6 +18,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -83,9 +84,11 @@ fun CreateJobScreen(
 @Composable
 fun MyJobsScreen(
     uiState: MyJobsUiState,
+    onConfirmCompletion: (String, String) -> Unit,
     onErrorConsumed: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
+    val otpInputs = remember { mutableStateMapOf<String, String>() }
 
     LaunchedEffect(uiState.errorMessage) {
         val message = uiState.errorMessage
@@ -129,6 +132,24 @@ fun MyJobsScreen(
                             val workerId = job.workerId
                             if (!workerId.isNullOrEmpty()) {
                                 Text(text = "Worker: $workerId")
+                            }
+                            if (job.status == "awaiting_confirmation") {
+                                Spacer(modifier = Modifier.height(8.dp))
+                                val otpValue = otpInputs[job.id] ?: ""
+                                OutlinedTextField(
+                                    value = otpValue,
+                                    onValueChange = { newValue ->
+                                        otpInputs[job.id] = newValue
+                                    },
+                                    label = { Text("Enter OTP") },
+                                    modifier = Modifier.fillMaxWidth()
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Button(onClick = {
+                                    onConfirmCompletion(job.id, otpInputs[job.id] ?: "")
+                                }) {
+                                    Text(text = "Confirm Completion")
+                                }
                             }
                         }
                     }

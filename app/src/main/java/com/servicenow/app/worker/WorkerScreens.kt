@@ -26,6 +26,8 @@ import androidx.compose.ui.unit.dp
 fun WorkerDashboardScreen(
     uiState: WorkerUiState,
     onAcceptJob: (WorkerJob) -> Unit,
+    onMarkInProgress: (WorkerJob) -> Unit,
+    onMarkCompleted: (WorkerJob) -> Unit,
     onErrorConsumed: () -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
@@ -35,6 +37,13 @@ fun WorkerDashboardScreen(
         if (message != null) {
             snackbarHostState.showSnackbar(message)
             onErrorConsumed()
+        }
+    }
+
+    LaunchedEffect(uiState.lastGeneratedOtp) {
+        val otp = uiState.lastGeneratedOtp
+        if (otp != null) {
+            snackbarHostState.showSnackbar("Completion OTP: $otp")
         }
     }
 
@@ -68,9 +77,11 @@ fun WorkerDashboardScreen(
                         ) {
                             Text(text = job.description)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Button(onClick = { onAcceptJob(job) }) {
-                                Text(text = "Accept")
-                            }
+                            Button(onClick = { onAcceptJob(job) }) { Text(text = "Accept") }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Button(onClick = { onMarkInProgress(job) }) { Text(text = "Mark In Progress") }
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Button(onClick = { onMarkCompleted(job) }) { Text(text = "Mark Completed") }
                         }
                     }
                 }

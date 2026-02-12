@@ -131,6 +131,9 @@ fun HomeNavHost(
         composable(Routes.MY_JOBS) {
             MyJobsScreen(
                 uiState = myJobsUiState,
+                onConfirmCompletion = { jobId, otp ->
+                    myJobsViewModel.confirmCompletion(jobId, otp)
+                },
                 onErrorConsumed = { myJobsViewModel.clearError() }
             )
         }
@@ -144,6 +147,19 @@ fun HomeNavHost(
                             homeMessage.value = "Job accepted"
                             navController.navigate(Routes.HOME)
                         },
+                        onError = { /* error snackbar handled in screen */ }
+                    )
+                },
+                onMarkInProgress = { job: WorkerJob ->
+                    workerViewModel.markInProgress(
+                        jobId = job.id,
+                        onUpdated = { homeMessage.value = "Job marked in progress" },
+                        onError = { /* error snackbar handled in screen */ }
+                    )
+                },
+                onMarkCompleted = { job: WorkerJob ->
+                    workerViewModel.markCompleted(
+                        jobId = job.id,
                         onError = { /* error snackbar handled in screen */ }
                     )
                 },

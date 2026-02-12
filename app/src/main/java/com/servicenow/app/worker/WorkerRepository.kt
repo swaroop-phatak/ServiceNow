@@ -3,6 +3,7 @@ package com.servicenow.app.worker
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import kotlin.random.Random
 
 data class WorkerJob(
     val id: String,
@@ -63,6 +64,40 @@ class WorkerRepository(
             .addOnSuccessListener { onSuccess() }
             .addOnFailureListener { e ->
                 onError(e.localizedMessage ?: "Failed to accept job")
+            }
+    }
+
+    fun markInProgress(
+        jobId: String,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    ) {
+        jobsCollection.document(jobId)
+            .update("status", "in_progress")
+            .addOnSuccessListener { onSuccess() }
+            .addOnFailureListener { e ->
+                onError(e.localizedMessage ?: "Failed to update job")
+            }
+    }
+
+    fun markCompletedWithOtp(
+        jobId: String,
+        onOtpGenerated: (String) -> Unit,
+        onError: (String) -> Unit
+    ) {
+        val otp = Random.nextInt(1000, 9999).toString()
+        jobsCollection.document(jobId)
+            .update(
+                mapOf(
+                    "status" to "awaiting_confirmation",
+                    "otp" to otp
+                )
+            )
+            .addOnSuccessListener {
+                onOtpGenerated(otp)
+            }
+            .addOnFailureListener { e ->
+                onError(e.localizedMessage ?: "Failed to update job")
             }
     }
 }
