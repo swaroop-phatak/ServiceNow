@@ -120,5 +120,11 @@ class AuthViewModel(
     fun clearError() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
     }
+
+    fun logout() {
+        FirebaseAuth.getInstance().signOut()
+        _uiState.value = AuthUiState()
+        _authStatus.value = AuthStatus.Unauthenticated
+    }
 }
 
